@@ -16,4 +16,6 @@ using q_tile = st_bf<64, head_dim>;
 // gmem descriptor for Q
 // shape: (batch, num_new_tokens, num_q_heads, head_dim)
 using q_global = gl<bf16, -1, -1, -1, head_dim, q_tile>;
-
+// smem tiles for K and V
+using k_tile = st_bf<kv_tile_tokens, head_dim>;
+using v_tile = st_bf<kv_tile_tokens, head_dim>;
