@@ -3,8 +3,7 @@
 ## 1. Prefill Full Flow
 
 <!-- PUT PREFILL FULL FLOW visual -->
-
-![Prefill full flow](./assets/prefill-full-flow.excalidraw.png)
+<img width="4929" height="2739" alt="prefill-full-flow excalidraw" src="https://github.com/user-attachments/assets/473427fd-6f5c-490d-98cf-22fc89dc443f" />
 
 
 During prefill, the model receives a prompt such as:
@@ -68,6 +67,9 @@ The important idea is that `S_ij` and `P_ij` are temporary tile-level register o
 ## 2. Prefill CTA Parallelism Over Query Tiles
 
 <!-- PUT PREFILL CTA PARALLELISM OVER Q TILES (PERSISTENT KV TILES) visual -->
+<img width="4211" height="1914" alt="prefill-parallelism excalidraw" src="https://github.com/user-attachments/assets/b55fdf06-8e4a-468f-b67a-177de8f53e3a" />
+
+
 
 In prefill, there are many query tokens. Therefore the natural parallelization strategy is over query tiles.
 
@@ -108,6 +110,8 @@ This is why prefill has enough parallelism: there are usually many query tiles, 
 ## 3. Decode Full Flow
 
 <!-- PUT DECODE FULL FLOW visual -->
+<img width="4929" height="2870" alt="decode-full-flow excalidraw" src="https://github.com/user-attachments/assets/b901bcfe-fef7-4264-a635-d137a8508881" />
+
 
 During decode, the model generates one or a few new tokens at a time. For a single new token, the hidden state is projected into:
 
@@ -145,6 +149,8 @@ However, a single CTA walking the full KV sequence may not expose enough paralle
 ## 4. Decode CTA KV-Split Parallelism
 
 <!-- PUT DECODE CTA KV-SPLIT PARALLELISM VISUAL -->
+<img width="2262" height="1189" alt="decode-parallelism excalidraw" src="https://github.com/user-attachments/assets/4bbc2596-8e13-4d42-a7b2-4de2b00f9eb6" />
+
 
 Split-KV parallelism adds a new parallel dimension: the KV sequence length.
 
