@@ -5,6 +5,7 @@
 <!-- PUT PREFILL FULL FLOW visual -->
 <img width="4929" height="2739" alt="prefill-full-flow excalidraw" src="https://github.com/user-attachments/assets/473427fd-6f5c-490d-98cf-22fc89dc443f" />
 
+<br><br>
 
 During prefill, the model receives a prompt such as:
 
@@ -36,7 +37,7 @@ O = P @ V
 
 For decoder-only models, this attention is causal, so each token can only attend to itself and previous tokens.
 
-In an efficient FlashAttention-style kernel, the full score matrix `S` and probability matrix `P` are **not materialized in global memory**. Instead, the kernel processes one query tile `Q_i` against one key/value tile `K_j, V_j` at a time.
+In an efficient FlashAttention style kernel, the full score matrix `S` and probability matrix `P` are **not materialised in global memory**. Instead, the kernel processes one query tile `Q_i` against one key/value tile `K_j, V_j` at a time.
 
 For each query tile `Q_i` (outer loop), the kernel streams over KV tiles (inner loop):
 
@@ -69,9 +70,10 @@ The important idea is that `S_ij` and `P_ij` are temporary tile-level register o
 <!-- PUT PREFILL CTA PARALLELISM OVER Q TILES (PERSISTENT KV TILES) visual -->
 <img width="4211" height="1914" alt="prefill-parallelism excalidraw" src="https://github.com/user-attachments/assets/b55fdf06-8e4a-468f-b67a-177de8f53e3a" />
 
+<br><br>
 
 
-In prefill, there are many query tokens. Therefore the natural parallelization strategy is over query tiles.
+In prefill, there are many query tokens. Therefore the natural parallelisation strategy is over query tiles.
 
 A simple mental model is:
 
@@ -112,6 +114,7 @@ This is why prefill has enough parallelism: there are usually many query tiles, 
 <!-- PUT DECODE FULL FLOW visual -->
 <img width="4929" height="2870" alt="decode-full-flow excalidraw" src="https://github.com/user-attachments/assets/b901bcfe-fef7-4264-a635-d137a8508881" />
 
+<br><br>
 
 During decode, the model generates one or a few new tokens at a time. For a single new token, the hidden state is projected into:
 
@@ -131,7 +134,7 @@ O = softmax(q_new @ K_cache^T) @ V_cache
 
 The important difference from prefill is:
 
-- Q is tiny.
+- Q is tiny. Usually 1, unless speculative decoding is used perhaps. (Acc I am not sure a kernel used after speculative decoding should be designed more like a prefill with paralellsim over queries or still with the split-KV decode design, maybe I can explore this later).
 - K/V cache can be very long.
 
 For example:
@@ -151,15 +154,16 @@ However, a single CTA walking the full KV sequence may not expose enough paralle
 <!-- PUT DECODE CTA KV-SPLIT PARALLELISM VISUAL -->
 <img width="2262" height="1189" alt="decode-parallelism excalidraw" src="https://github.com/user-attachments/assets/4bbc2596-8e13-4d42-a7b2-4de2b00f9eb6" />
 
+<br><br>
 
 Split-KV parallelism adds a new parallel dimension: the KV sequence length.
 
 Instead of one CTA processing the entire KV cache sequence, the KV sequence is divided into larger ranges:
 
 ```text
-KV range 0 -> CTA 0
-KV range 1 -> CTA 1
-KV range 2 -> CTA 2
+KV range 0 (split 0) -> CTA 0
+KV range 1 (split 1) -> CTA 1
+KV range 2 (split 2) -> CTA 2
 ...
 ```
 
@@ -176,7 +180,7 @@ CTA s:
     write log-sum-exp / lvec_s
 ```
 
-Inside each split, the CTA still has an inner loop over smaller K/V tiles:
+Inside each split, the CTA still has an inner loop over smaller K/V tiles just like with flash attention:
 
 ```text
 for each K/V tile in this split:
