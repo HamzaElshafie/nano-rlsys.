@@ -245,3 +245,29 @@ same Q block
     -> final O
 ```
 
+## 5. Initial Kernel Design
+
+### Partial Split Algorithm
+
+Require:
+    Query block Q in R^{T_q x G x d}
+    Key cache K in R^{N x d}
+    Value cache V in R^{N x d}
+    KV split range [s, e)
+    KV tile size B_c
+    Number of KV tiles T_c = ceil((e - s) / B_c)
+    Softmax scale tau
+
+where:
+    T_q <= 4 is the number of packed query tokens handled by this partial CTA.
+    G is the number of query heads sharing one KV head.
+    d is the head dimension.
+    N is the current KV cache length.
+    [s, e) is the contiguous KV range assigned to this CTA.
+    B_c is the number of cached KV tokens loaded per iteration.
+
+Implementation view:
+    Q is packed into Q_tile in R^{64 x d}.
+    Each query token occupies 16 row slots.
+    Row slots 0..G-1 within each token slice are real.
+    Remaining row slots are padding/inactive.
